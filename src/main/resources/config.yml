@@ -1,0 +1,18 @@
+# Ports to listen on for Java Edition
+ports:
+  - 25566
+  - 25567
+
+# Bedrock Edition (Geyser) Configuration
+# This uses a simple UDP proxy to forward traffic to your main Geyser port.
+# NOTE: Players connecting via these ports will appear as 127.0.0.1 to Geyser/Server.
+bedrock:
+  enabled: true
+  # The main UDP port where Geyser is running (usually 19132)
+  target-port: 19132
+  # The target host (usually 127.0.0.1 since Geyser is local)
+  target-address: "127.0.0.1"
+  # Extra ports to listen on for Bedrock clients
+  ports:
+    - 19133
+    - 19134
