@@ -42,7 +42,9 @@ public class BedrockPortManager {
             return;
         }
 
-        workerGroup = new NioEventLoopGroup();
+        if (workerGroup == null) {
+            workerGroup = new NioEventLoopGroup();
+        }
 
         for (int port : ports) {
             bindPort(port);
@@ -73,7 +75,11 @@ public class BedrockPortManager {
 
     public void shutdown() {
         for (Channel ch : boundChannels) {
-            ch.close();
+            try {
+                ch.close().sync();
+            } catch (InterruptedException e) {
+                plugin.getLogger().log(Level.WARNING, "Interrupted while closing Bedrock channel", e);
+            }
         }
         boundChannels.clear();
         
@@ -83,7 +89,8 @@ public class BedrockPortManager {
         sessions.clear();
 
         if (workerGroup != null) {
-            workerGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully().syncUninterruptibly();
+            workerGroup = null;
         }
     }
 

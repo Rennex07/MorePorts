@@ -116,7 +116,13 @@ public class PortManager {
         // We capture the list of channels BEFORE binding to see which one was added
         List<ChannelFuture> channelsBefore = getChannels();
         
-        bindMethod.invoke(serverConnection, null, port); // null usually binds to wildcard or server setting
+        String serverIp = Bukkit.getIp();
+        InetAddress bindAddress = null;
+        if (serverIp != null && !serverIp.isEmpty()) {
+            bindAddress = InetAddress.getByName(serverIp);
+        }
+        
+        bindMethod.invoke(serverConnection, bindAddress, port);
         
         // Capture list AFTER to find the new one and track it
         List<ChannelFuture> channelsAfter = getChannels();
@@ -166,8 +172,10 @@ public class PortManager {
     public void unbindAll() {
         for (ChannelFuture cf : activeChannels) {
             try {
-                cf.channel().close().sync();
-                plugin.getLogger().info("Closed channel for extra port");
+                if (cf.channel() != null && cf.channel().isOpen()) {
+                    cf.channel().close().sync();
+                    plugin.getLogger().info("Closed Java channel for extra port");
+                }
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to close channel: " + e.getMessage());
             }
